@@ -5,7 +5,7 @@ import './App.css'
 const NAV_LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'How it works', href: '#how-it-works' },
-  { label: 'GitHub', href: 'https://github.com' },
+  { label: 'GitHub', href: 'https://github.com/Sufyanulhaq/pulse' },
 ]
 
 const STATS = [
@@ -295,7 +295,7 @@ function Hero() {
               Get started free
               <Icon.Arrow />
             </a>
-            <a className="btn btn-ghost" href="https://github.com" target="_blank" rel="noreferrer">
+            <a className="btn btn-ghost" href="https://github.com/Sufyanulhaq/pulse" target="_blank" rel="noreferrer">
               <Icon.Github />
               View on GitHub
             </a>
@@ -438,7 +438,7 @@ function CTABanner() {
               Get started free
               <Icon.Arrow />
             </a>
-            <a className="btn btn-ghost" href="https://github.com" target="_blank" rel="noreferrer">
+            <a className="btn btn-ghost" href="https://github.com/Sufyanulhaq/pulse" target="_blank" rel="noreferrer">
               <Icon.Github />
               Star on GitHub
             </a>
@@ -464,7 +464,7 @@ function Footer() {
             <a href="#features">Features</a>
           </li>
           <li>
-            <a href="https://github.com" target="_blank" rel="noreferrer">
+            <a href="https://github.com/Sufyanulhaq/pulse" target="_blank" rel="noreferrer">
               GitHub
             </a>
           </li>
