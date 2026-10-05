@@ -1,17 +1,25 @@
 import { Router } from 'express'
 import { checkPassword, DUMMY_PASSWORD, newId, protectPassword } from '../crypto.js'
-import { HttpError, conflict, parse, rateLimit, route, unauthorized } from '../http.js'
+import { HttpError, badRequest, conflict, parse, rateLimit, route, unauthorized } from '../http.js'
 import { loginSchema, signupSchema } from '../schemas.js'
 import { clearSessionCookie, createLogin, publicUser, setSessionCookie } from '../auth.js'
 import { saveSettings } from '../store.js'
 import { DEFAULT_SETTINGS } from '../../src/lib/settings.js'
+import { consumeToken, issueToken } from '../emailTokens.js'
+import { email as emailSchema, password as passwordSchema } from '../schemas.js'
+import { z } from 'zod'
 
 const LOCK_AFTER = 5
 const LOCK_MS = 15 * 60_000
 
-export function authRoutes({ db, config }) {
+export async function sendVerification(db, config, mailer, user) {
+  const token = issueToken(db, user.id, 'verify')
+  return mailer.send(user.email, 'verify', { name: user.name, url: `${config.appUrl}/verify?token=${token}` })
+}
+
+export function authRoutes({ db, config, mailer }) {
   const r = Router()
-  const limiter = rateLimit({ windowMs: 60_000, max: 20, message: 'Too many attempts. Wait a minute and try again.' })
+  const limiter = rateLimit({ windowMs: 60_000, max: config.authRateLimit, message: 'Too many attempts. Wait a minute and try again.' })
 
   r.post(
     '/signup',
@@ -32,7 +40,8 @@ export function authRoutes({ db, config }) {
       )
       saveSettings(db, user.id, DEFAULT_SETTINGS)
       setSessionCookie(res, config, createLogin(db, config, user.id, req.get('user-agent')))
-      res.status(201).json({ user: publicUser(user, config) })
+      await sendVerification(db, config, mailer, user)
+      res.status(201).json({ user: publicUser({ ...user, plan: 'free' }, config) })
     }),
   )
 
@@ -60,6 +69,54 @@ export function authRoutes({ db, config }) {
       db.prepare('DELETE FROM login_attempts WHERE email = ?').run(body.email)
       setSessionCookie(res, config, createLogin(db, config, user.id, req.get('user-agent')))
       res.json({ user: publicUser(user, config) })
+    }),
+  )
+
+  r.post(
+    '/verify',
+    limiter,
+    route(async (req, res) => {
+      const { token } = parse(z.object({ token: z.string().min(1).max(200) }), req.body)
+      const row = consumeToken(db, 'verify', token)
+      if (!row) throw badRequest('That link has expired or was already used. Log in and send a new one from Settings.')
+      db.prepare('UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?').run(Date.now(), row.user_id)
+      res.json({ ok: true })
+    }),
+  )
+
+  // Always the same answer, so the form cannot be used to find out who has an account.
+  r.post(
+    '/forgot',
+    limiter,
+    route(async (req, res) => {
+      const { email } = parse(z.object({ email: emailSchema }), req.body)
+      const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email)
+      if (user) {
+        const token = issueToken(db, user.id, 'reset')
+        await mailer.send(user.email, 'reset', { name: user.name, url: `${config.appUrl}/reset?token=${token}` })
+      }
+      res.json({ ok: true, message: 'If that email has an account, a reset link is on its way.' })
+    }),
+  )
+
+  r.post(
+    '/reset',
+    limiter,
+    route(async (req, res) => {
+      const body = parse(z.object({ token: z.string().min(1).max(200), password: passwordSchema }), req.body)
+      const row = consumeToken(db, 'reset', body.token)
+      if (!row) throw badRequest('That reset link has expired or was already used. Ask for a new one.')
+      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id)
+      db.prepare('UPDATE users SET password = ?, email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?').run(
+        await protectPassword(body.password),
+        Date.now(),
+        user.id,
+      )
+      // A reset ends every login and clears any lockout.
+      db.prepare('DELETE FROM auth_sessions WHERE user_id = ?').run(user.id)
+      db.prepare('DELETE FROM login_attempts WHERE email = ?').run(user.email)
+      await mailer.send(user.email, 'passwordChanged', { name: user.name })
+      res.json({ ok: true })
     }),
   )
 

@@ -5,9 +5,13 @@ import { useToast } from '../../state/ToastContext.jsx'
 import { duration, hourLabel, percent, shortDate } from '../../lib/format.js'
 import { BarChart, BarList } from '../../components/Charts.jsx'
 import { Icon } from '../../components/Icon.jsx'
+import { useAuth } from '../../state/AuthContext.jsx'
+import { UpgradeCallout } from '../../components/UpgradeCallout.jsx'
 import { Badge, ConfirmDialog, CopyButton, EmptyState, Field, Spinner, Stat, usePageTitle } from '../../components/ui.jsx'
 
 function TeamForms({ onDone }) {
+  const { user } = useAuth()
+  const canCreate = user?.billing?.features?.createTeams !== false
   const [params] = useSearchParams()
   const [name, setName] = useState('')
   const [code, setCode] = useState(params.get('join') || '')
@@ -33,6 +37,13 @@ function TeamForms({ onDone }) {
 
   return (
     <div className="grid grid-2">
+      {!canCreate ? (
+        <div className="card">
+          <h2 className="card-title">Create a team</h2>
+          <p className="card-sub mb">Creating a team needs the Team plan. Joining one is always free.</p>
+          <UpgradeCallout plan="Team">Run a team with private, totals only insights.</UpgradeCallout>
+        </div>
+      ) : (
       <form
         className="card"
         onSubmit={(e) => {
@@ -51,6 +62,7 @@ function TeamForms({ onDone }) {
           </button>
         </div>
       </form>
+      )}
       <form
         className="card"
         onSubmit={(e) => {
@@ -70,6 +82,44 @@ function TeamForms({ onDone }) {
         </div>
       </form>
     </div>
+  )
+}
+
+function InviteByEmail({ teamId }) {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [value, setValue] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  if (!user?.emailVerified) return <p className="small muted mt-sm">Confirm your email address to send invites by email.</p>
+  return (
+    <form
+      className="inline-form"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const emails = value.split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean)
+        if (!emails.length) return setError('Add at least one email.')
+        setBusy(true)
+        setError('')
+        try {
+          const r = await api.post(`/teams/${teamId}/invites`, { emails })
+          const sent = r.results.filter((x) => x.sent).length
+          toast(`Sent ${sent} invite${sent === 1 ? '' : 's'}${sent < r.results.length ? `; ${r.results.length - sent} failed` : ''}.`, { tone: sent ? 'success' : 'error' })
+          setValue('')
+        } catch (err) {
+          setError(Object.values(err.fields || {})[0] || err.message)
+        } finally {
+          setBusy(false)
+        }
+      }}
+    >
+      <Field label="Invite by email" hint="Separate several addresses with commas. Up to 10 at a time." error={error}>
+        {(p) => <input {...p} className="input" value={value} onChange={(e) => setValue(e.target.value)} placeholder="sam@example.com, alex@example.com" />}
+      </Field>
+      <button className="btn btn-primary" type="submit" disabled={busy}>
+        {busy ? <Spinner /> : <Icon.Send width={15} height={15} />} Send
+      </button>
+    </form>
   )
 }
 
@@ -271,6 +321,7 @@ export function TeamDetail() {
               </div>
             </div>
             <div className="invite-code mono">{team.inviteCode}</div>
+            <InviteByEmail teamId={team.id} />
             <div className="row mt-sm">
               <CopyButton text={team.inviteCode} label="Copy code" />
               <CopyButton text={inviteLink} label="Copy link" />

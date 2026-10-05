@@ -13,7 +13,8 @@
     "test": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest run",
     "test:e2e": "node tests/e2e/run.js",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backup": "node --disable-warning=ExperimentalWarning scripts/backup.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
@@ -22,6 +23,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^7.18.4",
+    "stripe": "^23.0.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import { DatabaseSync, backup } from 'node:sqlite'
 
 const MIGRATIONS = [
   `
@@ -106,6 +106,42 @@ const MIGRATIONS = [
   );
   CREATE INDEX assistant_messages_user ON assistant_messages(user_id, created_at);
   `,
+  `
+  ALTER TABLE users ADD COLUMN email_verified_at INTEGER;
+  ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'free';
+  ALTER TABLE users ADD COLUMN plan_status TEXT;
+  ALTER TABLE users ADD COLUMN plan_interval TEXT;
+  ALTER TABLE users ADD COLUMN plan_seats INTEGER;
+  ALTER TABLE users ADD COLUMN plan_period_end INTEGER;
+  ALTER TABLE users ADD COLUMN plan_cancel_at_period_end INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE users ADD COLUMN stripe_customer_id TEXT;
+  ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT;
+  CREATE UNIQUE INDEX users_stripe_customer ON users(stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+  CREATE TABLE email_tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    token_digest TEXT NOT NULL UNIQUE,
+    data TEXT,
+    expires_at INTEGER NOT NULL,
+    used_at INTEGER,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX email_tokens_user ON email_tokens(user_id, kind);
+  CREATE TABLE stripe_events (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,
+    received_at INTEGER NOT NULL
+  );
+  CREATE TABLE email_log (
+    id TEXT PRIMARY KEY,
+    to_address TEXT NOT NULL,
+    template TEXT NOT NULL,
+    status TEXT NOT NULL,
+    error TEXT,
+    created_at INTEGER NOT NULL
+  );
+  `,
 ]
 
 export function openDatabase(path) {
@@ -127,6 +163,16 @@ export function openDatabase(path) {
     }
   }
   return db
+}
+
+/**
+ * Copy the live database to `path` without stopping writes, using SQLite's
+ * online backup. Safe to run while the server is busy.
+ */
+export async function backupTo(db, path) {
+  mkdirSync(dirname(path), { recursive: true })
+  await backup(db, path)
+  return path
 }
 
 /** Run `fn` inside a transaction; everything is saved or nothing is. */

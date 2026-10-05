@@ -55,10 +55,10 @@ export function createAssistant(config, logger, client) {
 
   return {
     mode: anthropic ? 'claude' : 'offline',
-    async ask(question, facts) {
+    async ask(question, facts, { allowClaude = true } = {}) {
       const hasData = facts.some((f) => f.id === 'today_minutes')
       // With no data there is nothing to send, so no API call is made.
-      if (!anthropic || !hasData) return { ...answerOffline(question, facts), mode: 'offline' }
+      if (!anthropic || !hasData || !allowClaude) return { ...answerOffline(question, facts), mode: 'offline' }
       try {
         return { ...(await askClaude(question, facts)), mode: 'claude' }
       } catch (err) {

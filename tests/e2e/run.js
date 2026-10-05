@@ -63,10 +63,20 @@ const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning',
     WEBHOOK_ALLOW_HTTP: '1',
     TRUST_PROXY: '0',
     ANTHROPIC_API_KEY: '',
+    APP_URL: base,
+    EMAIL_PROVIDER: 'log',
+    STRIPE_SECRET_KEY: '',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 })
 server.stderr.on('data', (d) => process.stderr.write(d))
+// With the log email provider the server prints each email; the tests read links from it.
+let serverOut = ''
+server.stdout.on('data', (d) => (serverOut += d))
+function lastLink(kind) {
+  const matches = [...serverOut.matchAll(new RegExp(`${base.replace(/[.:/]/g, (c) => `\\${c}`)}/${kind}\\?token=[A-Za-z0-9_-]+`, 'g'))]
+  return matches.length ? matches[matches.length - 1][0] : null
+}
 for (let i = 0; i < 50; i++) {
   try {
     if ((await fetch(`${base}/api/health`)).ok) break
@@ -187,6 +197,20 @@ await step('sign up, move local sessions to the account', async () => {
   await page.getByText(/Loaded \d+ sample sessions/).waitFor()
 })
 
+await step('confirm email from the link in the welcome email', async () => {
+  const link = lastLink('verify')
+  assert(link, 'no verify link was printed')
+  await page.goto(link)
+  await page.getByRole('heading', { name: 'Email confirmed' }).waitFor()
+  const me = await page.evaluate(() => fetch('/api/auth/me').then((r) => r.json()))
+  assert(me.user.emailVerified, 'email not marked as confirmed')
+})
+
+await step('billing page explains the free beta', async () => {
+  await page.goto(base + '/app/billing')
+  await page.getByText('Pulse is in public beta, so every feature is free.').waitFor()
+})
+
 await step('webhook: add, send test, delivered and signed', async () => {
   await page.goto(base + '/app/developer')
   await page.getByRole('button', { name: 'Add webhook' }).first().click()
@@ -249,6 +273,33 @@ await step('dark theme and log out, log back in', async () => {
   await page.getByLabel('Password', { exact: true }).fill('a strong test password')
   await page.getByRole('button', { name: 'Log in' }).click()
   await page.waitForURL(/\/app$/)
+})
+
+await step('forgot password: email link resets it, old password stops working', async () => {
+  const ctx = await browser.newContext()
+  const p = await ctx.newPage()
+  await p.goto(base + '/login')
+  await p.getByRole('link', { name: 'Forgot your password?' }).click()
+  await p.getByRole('heading', { name: 'Reset your password' }).waitFor()
+  await p.getByLabel('Email').fill('admin@example.com')
+  await p.getByRole('button', { name: 'Send reset link' }).click()
+  await p.getByText(/a reset link is on its way/).waitFor()
+  const link = lastLink('reset')
+  assert(link, 'no reset link was printed')
+  await p.goto(link)
+  await p.getByRole('heading', { name: 'Choose a new password' }).waitFor()
+  await p.getByLabel('New password').fill('a newer test password')
+  await p.getByLabel('Type it again').fill('a newer test password')
+  await p.getByRole('button', { name: 'Save new password' }).click()
+  await p.getByText('Your password is changed').waitFor()
+  await p.goto(link)
+  await p.getByLabel('New password').fill('yet another password')
+  await p.getByLabel('Type it again').fill('yet another password')
+  await p.getByRole('button', { name: 'Save new password' }).click()
+  await p.getByText(/expired or was already used/).waitFor()
+  const old = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'pulse' }, body: JSON.stringify({ email: 'admin@example.com', password: 'a strong test password' }) })
+  assert(old.status === 401, `old password still works (${old.status})`)
+  await ctx.close()
 })
 
 await step('no console errors anywhere', async () => {

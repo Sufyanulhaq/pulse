@@ -4,6 +4,7 @@ import { newId, randomToken } from '../crypto.js'
 import { badRequest, notFound, parse, route } from '../http.js'
 import { WEBHOOK_EVENTS, webhookSchema } from '../schemas.js'
 import { checkDestination } from '../webhooks.js'
+import { requireFeature } from '../auth.js'
 
 const MAX_ENDPOINTS = 10
 
@@ -57,6 +58,7 @@ export function webhookRoutes({ db, config, worker }) {
 
   r.post(
     '/',
+    requireFeature(config, 'webhooks'),
     route(async (req, res) => {
       const body = parse(webhookSchema, req.body)
       const count = db.prepare('SELECT COUNT(*) AS n FROM webhook_endpoints WHERE user_id = ?').get(req.user.id).n

@@ -2,6 +2,21 @@ import { Badge, Reveal, usePageTitle } from '../../components/ui.jsx'
 
 const ENTRIES = [
   {
+    version: '1.1',
+    date: '5 October 2026',
+    title: 'Plans, payments and account email',
+    tag: ['primary', 'Feature'],
+    items: [
+      'Pro and Team plans with Stripe Checkout, monthly or yearly billing and per seat pricing for teams',
+      'Manage billing, change cards and download invoices in the Stripe customer portal',
+      'Plans kept in step by signed Stripe webhooks, with retries and repeats handled safely',
+      'Email confirmation, forgotten password reset and an email when your password changes',
+      'Invite people to a team by email',
+      'Scheduled database backups with an admin Back up now button',
+      'Continuous integration: lint, 100 unit and API tests, a build and a 16 step browser test on every push',
+    ],
+  },
+  {
     version: '1.0',
     date: '5 October 2026',
     title: 'Pulse becomes a full product',

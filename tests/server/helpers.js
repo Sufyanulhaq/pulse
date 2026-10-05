@@ -5,24 +5,33 @@ import { loadConfig } from '../../server/config.js'
 import { openDatabase } from '../../server/db.js'
 import { silentLogger } from '../../server/http.js'
 import { createWorker } from '../../server/webhooks.js'
+import { createMailer } from '../../server/mailer.js'
+import { createBackups } from '../../server/backups.js'
 
-export async function startServer(overrides = {}, { assistantClient } = {}) {
+export async function startServer(overrides = {}, { assistantClient, stripe = null } = {}) {
   const base = loadConfig({ NODE_ENV: 'test' })
   const config = {
     ...base,
     adminEmails: ['admin@example.com'],
+    authRateLimit: 1000,
     ...overrides,
     webhook: { ...base.webhook, allowPrivate: true, allowHttp: true, baseDelayMs: 50, maxAttempts: 3, timeoutMs: 2000, ...(overrides.webhook || {}) },
+    stripe: { ...base.stripe, ...(overrides.stripe || {}) },
+    email: { ...base.email, provider: 'log', ...(overrides.email || {}) },
+    backup: { ...base.backup, ...(overrides.backup || {}) },
+    appUrl: 'https://pulse.test',
   }
   const db = openDatabase(':memory:')
   const assistant = createAssistant(config, silentLogger, assistantClient)
   const worker = createWorker({ db, config, logger: silentLogger })
-  const app = createApp({ db, config, logger: silentLogger, assistant, worker })
+  const mailer = createMailer({ config, db, logger: silentLogger })
+  const backups = createBackups({ db, config, logger: silentLogger })
+  const app = createApp({ db, config, logger: silentLogger, assistant, worker, mailer, stripe, backups })
   const server = await new Promise((resolve) => {
     const s = app.listen(0, () => resolve(s))
   })
   const url = `http://127.0.0.1:${server.address().port}`
-  return { url, db, config, worker, close: () => new Promise((resolve) => server.close(resolve)) }
+  return { url, db, config, worker, mailer, backups, close: () => new Promise((resolve) => server.close(resolve)) }
 }
 
 /** A tiny client that keeps the session cookie, like a browser would. */

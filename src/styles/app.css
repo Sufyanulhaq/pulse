@@ -927,3 +927,61 @@
 .strength-bars .on.s4 {
   background: var(--good);
 }
+
+.flow {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.flow .auth-main {
+  flex: 1;
+}
+
+.forgot-link {
+  justify-self: end;
+  margin-top: -6px;
+}
+
+.billing-current {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.billing-current h2 {
+  font-size: 26px;
+  margin-top: 2px;
+}
+
+.billing-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-5) 0 var(--space-4);
+}
+
+.billing-plans .plan-features {
+  border-top: 0;
+  padding-top: 0;
+  margin-bottom: 12px;
+  flex: 1;
+  align-content: start;
+}
+
+.billing-plans .plan {
+  height: 100%;
+}
+
+.upgrade-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mb {
+  margin-bottom: 14px;
+}

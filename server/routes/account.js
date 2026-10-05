@@ -1,13 +1,24 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { checkPassword, protectPassword } from '../crypto.js'
-import { parse, route, unauthorized } from '../http.js'
+import { parse, rateLimit, route, unauthorized } from '../http.js'
+import { sendVerification } from './auth.js'
 import { password } from '../schemas.js'
 import { clearSessionCookie, publicUser } from '../auth.js'
 import { allSessions, getSettings } from '../store.js'
 
-export function accountRoutes({ db, config }) {
+export function accountRoutes({ db, config, mailer }) {
   const r = Router()
+
+  r.post(
+    '/verify/resend',
+    rateLimit({ windowMs: 10 * 60_000, max: 3, key: (req) => req.user.id, message: 'A link was sent a moment ago. Check your inbox, or try again in a few minutes.' }),
+    route(async (req, res) => {
+      if (req.user.email_verified_at) return res.json({ ok: true, alreadyVerified: true })
+      await sendVerification(db, config, mailer, req.user)
+      res.json({ ok: true })
+    }),
+  )
 
   r.patch(
     '/',
@@ -26,6 +37,7 @@ export function accountRoutes({ db, config }) {
       db.prepare('UPDATE users SET password = ? WHERE id = ?').run(await protectPassword(body.next), req.user.id)
       // Log out every other device.
       db.prepare('DELETE FROM auth_sessions WHERE user_id = ? AND id != ?').run(req.user.id, req.auth.loginId)
+      await mailer.send(req.user.email, 'passwordChanged', { name: req.user.name })
       res.json({ ok: true })
     }),
   )

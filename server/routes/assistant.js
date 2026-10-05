@@ -5,7 +5,9 @@ import { assistantSchema } from '../schemas.js'
 import { allSessions, getSettings } from '../store.js'
 import { buildFacts } from '../../src/lib/assistant.js'
 
-export function assistantRoutes({ db, assistant }) {
+import { entitlements } from '../plans.js'
+
+export function assistantRoutes({ db, assistant, config }) {
   const r = Router()
   const limiter = rateLimit({ windowMs: 60_000, max: 20, key: (req) => req.user.id, message: 'That is a lot of questions. Wait a minute and ask again.' })
 
@@ -15,7 +17,7 @@ export function assistantRoutes({ db, assistant }) {
       .all(req.user.id)
       .reverse()
     res.json({
-      mode: assistant.mode,
+      mode: assistant.mode === 'claude' && !entitlements(req.user, config).claudeAssistant ? 'offline' : assistant.mode,
       messages: rows.map((row) => ({
         id: row.id,
         question: row.question,
@@ -34,7 +36,7 @@ export function assistantRoutes({ db, assistant }) {
     route(async (req, res) => {
       const { question } = parse(assistantSchema, req.body)
       const facts = buildFacts(allSessions(db, req.user.id), getSettings(db, req.user.id))
-      const result = await assistant.ask(question, facts)
+      const result = await assistant.ask(question, facts, { allowClaude: entitlements(req.user, config).claudeAssistant })
       const message = {
         id: newId('msg_'),
         question,

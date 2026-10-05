@@ -1,5 +1,6 @@
 import { digest, newId, randomToken } from './crypto.js'
-import { forbidden, unauthorized } from './http.js'
+import { HttpError, forbidden, unauthorized } from './http.js'
+import { FEATURE_MESSAGES, billingSummary, entitlements } from './plans.js'
 
 export const COOKIE = 'pulse_session'
 const DAY = 86_400_000
@@ -46,7 +47,9 @@ export function publicUser(user, config) {
     email: user.email,
     name: user.name,
     createdAt: user.created_at,
+    emailVerified: Boolean(user.email_verified_at),
     isAdmin: config.adminEmails.includes(user.email),
+    billing: billingSummary(user, config),
   }
 }
 
@@ -54,7 +57,7 @@ export function publicUser(user, config) {
  * Works out who is calling. A browser uses the session cookie; scripts use
  * `Authorization: Bearer pulse_...` with a personal API token.
  */
-export function authenticate(db) {
+export function authenticate(db, config) {
   const bySession = db.prepare(
     `SELECT users.*, auth_sessions.id AS login_id FROM auth_sessions
      JOIN users ON users.id = auth_sessions.user_id
@@ -73,6 +76,7 @@ export function authenticate(db) {
     if (header.toLowerCase().startsWith('bearer ')) {
       const row = byToken.get(digest(header.slice(7).trim()))
       if (!row) return next(unauthorized('That API token is not valid.'))
+      if (!entitlements(row, config).apiTokens) return next(new HttpError(402, 'plan_required', 'API tokens need the Pro plan. Upgrade in Settings to use this token again.'))
       touchToken.run(Date.now(), row.token_id)
       req.user = row
       req.auth = { kind: 'token', tokenId: row.token_id, scope: row.token_scope }
@@ -118,6 +122,21 @@ export function requireCsrfHeader(req, res, next) {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next()
   if (req.auth?.kind === 'token') return next()
   if (req.get('x-requested-with') !== 'pulse') return next(forbidden('Missing the X-Requested-With header.'))
+  next()
+}
+
+/** Stop a request when the account's plan does not include `feature`. */
+export function requireFeature(config, feature) {
+  return (req, res, next) => {
+    if (!entitlements(req.user, config)[feature]) {
+      return next(new HttpError(402, 'plan_required', FEATURE_MESSAGES[feature]))
+    }
+    next()
+  }
+}
+
+export function requireVerified(req, res, next) {
+  if (!req.user?.email_verified_at) return next(forbidden('Confirm your email address first. You can resend the link from Settings.'))
   next()
 }
 

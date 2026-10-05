@@ -3,6 +3,7 @@ import { isIP } from 'node:net'
 import { signPayload } from '../src/lib/webhook.js'
 import { newId } from './crypto.js'
 import { badRequest } from './http.js'
+import { entitlements } from './plans.js'
 
 /** True for loopback, private, link local, carrier grade NAT and other non public ranges. */
 export function isPrivateAddress(address) {
@@ -59,7 +60,12 @@ export async function checkDestination(rawUrl, { allowPrivate, allowHttp }) {
 }
 
 /** Queue one delivery per active endpoint that listens for this event. */
-export function enqueueEvent(db, userId, event) {
+export function enqueueEvent(db, userId, event, config) {
+  if (config) {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
+    // An account that has moved off a plan with webhooks stops sending them.
+    if (!user || !entitlements(user, config).webhooks) return 0
+  }
   const endpoints = db
     .prepare('SELECT id, events FROM webhook_endpoints WHERE user_id = ? AND active = 1')
     .all(userId)

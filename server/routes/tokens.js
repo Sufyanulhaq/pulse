@@ -2,8 +2,9 @@ import { Router } from 'express'
 import { digest, newId, randomToken } from '../crypto.js'
 import { badRequest, notFound, parse, route } from '../http.js'
 import { tokenSchema } from '../schemas.js'
+import { requireFeature } from '../auth.js'
 
-export function tokenRoutes({ db }) {
+export function tokenRoutes({ db, config }) {
   const r = Router()
   r.get('/', (req, res) => {
     const rows = db
@@ -13,6 +14,7 @@ export function tokenRoutes({ db }) {
   })
   r.post(
     '/',
+    requireFeature(config, 'apiTokens'),
     route(async (req, res) => {
       const body = parse(tokenSchema, req.body)
       const count = db.prepare('SELECT COUNT(*) AS n FROM api_tokens WHERE user_id = ?').get(req.user.id).n

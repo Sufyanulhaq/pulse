@@ -98,6 +98,9 @@ export function LoginPage() {
         <Field label="Password" error={errors.password}>
           {(p) => <PasswordInput {...p} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />}
         </Field>
+        <Link to="/forgot" className="small forgot-link">
+          Forgot your password?
+        </Link>
         <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
           {busy && <Spinner />} Log in
         </button>

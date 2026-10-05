@@ -126,7 +126,9 @@ function Account() {
           }}
         >
           <Field label="Name">{(p) => <input {...p} className="input" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />}</Field>
-          <Field label="Email">{(p) => <input {...p} className="input" value={user.email} disabled />}</Field>
+          <Field label="Email" hint={user.emailVerified ? 'Confirmed' : 'Not confirmed yet. Check your inbox for the link.'}>
+            {(p) => <input {...p} className="input" value={user.email} disabled />}
+          </Field>
           <button className="btn btn-ghost" type="submit" disabled={name.trim() === user.name || !name.trim()}>
             Save
           </button>
@@ -278,6 +280,11 @@ export default function SettingsPage() {
         {user?.isAdmin && (
           <Link to="/app/admin" className="btn btn-ghost btn-sm">
             <Icon.Dashboard width={15} height={15} /> Admin
+          </Link>
+        )}
+        {user && (
+          <Link to="/app/billing" className="btn btn-ghost btn-sm">
+            <Icon.Briefcase width={15} height={15} /> Billing
           </Link>
         )}
         <Link to="/" className="btn btn-ghost btn-sm">

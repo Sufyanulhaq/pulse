@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Icon } from '../../components/Icon.jsx'
 import { Reveal, SectionHead, Segmented, usePageTitle } from '../../components/ui.jsx'
@@ -17,7 +17,7 @@ const PLANS = [
     name: 'Pro',
     monthly: 6,
     blurb: 'For people who live in their timer.',
-    cta: 'Start free during beta',
+    cta: 'Upgrade to Pro',
     featured: true,
     features: ['Everything in Personal', 'Assistant answers written by Claude', 'Webhooks with delivery log and replay', 'Personal API tokens', 'Priority email support'],
   },
@@ -27,7 +27,7 @@ const PLANS = [
     monthly: 10,
     perSeat: true,
     blurb: 'Protect focus time across a team.',
-    cta: 'Start free during beta',
+    cta: 'Start a team',
     features: ['Everything in Pro, for each member', 'Team insights with privacy thresholds', 'Invite codes and owner controls', 'Up to 50 members per team', 'Admin overview'],
   },
 ]
@@ -46,7 +46,8 @@ const COMPARE = [
 ]
 
 const FAQ = [
-  ['Can I pay for Pro today?', 'Not yet. Pulse is in public beta and every feature on this page is free while it lasts. You will get at least 30 days of notice by email before any paid plan starts, and nothing you have recorded will be lost if you stay on Personal.'],
+  ['How do payments work?', 'Payments go through Stripe, so card details never touch Pulse. Upgrade, change seats, download invoices or cancel any time from Billing in the app. Cancelling keeps your plan until the end of the period you paid for.'],
+  ['What happens if I downgrade?', 'Your sessions and history stay. Webhooks pause and API tokens stop working until you upgrade again; nothing is deleted.'],
   ['Do I need an account?', 'No. The timer, insights, history, assistant and export all work in your browser without one. An account adds sync, teams, webhooks and the API.'],
   ['Where is my data stored?', 'Without an account, only in your browser’s local storage. With an account, in the Pulse database on the server. You can download all of it or delete it at any time from Settings.'],
   ['Can my manager see my numbers?', 'No. Teams only ever show totals and averages, and only once at least three people have joined, so no one can work out an individual’s figures.'],
@@ -58,14 +59,23 @@ export default function PricingPage() {
   const [billing, setBilling] = useState('annual')
   const [seats, setSeats] = useState(8)
   const [open, setOpen] = useState(0)
+  const [beta, setBeta] = useState(false)
+  useEffect(() => {
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then((h) => setBeta(!h.billing))
+      .catch(() => {})
+  }, [])
   const price = (p) => (billing === 'annual' ? Math.round(p.monthly * 10) / 12 : p.monthly)
 
   return (
     <>
       <section className="page-hero container center">
         <span className="eyebrow">Pricing</span>
-        <h1>Simple pricing. Free during the beta.</h1>
-        <p className="hero-sub center-text">Start without an account. Upgrade only if you want what the bigger plans add.</p>
+        <h1>{beta ? 'Simple pricing. Free during the beta.' : 'Simple, honest pricing'}</h1>
+        <p className="hero-sub center-text">
+          {beta ? 'Every feature is free while the beta runs. These are the plans that start when it ends, with at least 30 days of notice.' : 'Start without an account. Upgrade only if you want what the bigger plans add.'}
+        </p>
         <div className="billing-toggle">
           <Segmented
             label="Billing period"
@@ -101,8 +111,8 @@ export default function PricingPage() {
                 </p>
               </div>
             )}
-            <Link to="/app" className={`btn btn-block ${p.featured ? 'btn-primary' : 'btn-ghost'}`}>
-              {p.cta}
+            <Link to={p.monthly ? (beta ? '/app' : '/app/billing') : '/app'} className={`btn btn-block ${p.featured ? 'btn-primary' : 'btn-ghost'}`}>
+              {beta && p.monthly ? 'Free during the beta' : p.cta}
             </Link>
             <ul className="plan-features">
               {p.features.map((f) => (

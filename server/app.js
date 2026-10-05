@@ -12,31 +12,34 @@ import { sessionRoutes, statsRoutes } from './routes/sessions.js'
 import { settingsRoutes } from './routes/settings.js'
 import { teamRoutes } from './routes/teams.js'
 import { tokenRoutes } from './routes/tokens.js'
+import { billingRoutes, stripeWebhook } from './routes/billing.js'
 import { deliveryRoutes, webhookRoutes } from './routes/webhooks.js'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 
-export function createApp({ db, config, logger, assistant, worker }) {
+export function createApp({ db, config, logger, assistant, worker, mailer, stripe = null, backups }) {
   const app = express()
   app.disable('x-powered-by')
   if (config.trustProxy) app.set('trust proxy', 1)
 
   app.use(securityHeaders(config))
+  // Stripe signs the exact bytes it sends, so this route reads the raw body before JSON parsing.
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json', limit: '1mb' }), stripeWebhook({ db, config, stripe, logger }))
   app.use('/api', express.json({ limit: '2mb' }))
   app.use('/api', (req, res, next) => {
     res.setHeader('Cache-Control', 'no-store')
     next()
   })
   app.use('/api', rateLimit({ windowMs: 60_000, max: 600 }))
-  app.use('/api', authenticate(db))
+  app.use('/api', authenticate(db, config))
   app.use('/api', requireCsrfHeader)
 
   app.get('/api/health', (req, res) => {
     db.prepare('SELECT 1').get()
-    res.json({ ok: true, assistant: assistant.mode, time: new Date().toISOString() })
+    res.json({ ok: true, assistant: assistant.mode, billing: Boolean(config.stripe.secretKey), email: mailer.provider, time: new Date().toISOString() })
   })
 
-  const deps = { db, config, logger, assistant, worker }
+  const deps = { db, config, logger, assistant, worker, mailer, stripe, backups }
   app.use('/api/auth', authRoutes(deps))
   app.use('/api/account', requireSession, accountRoutes(deps))
   app.use('/api/sessions', requireUser, sessionRoutes(deps))
@@ -47,6 +50,7 @@ export function createApp({ db, config, logger, assistant, worker }) {
   app.use('/api/tokens', requireSession, tokenRoutes(deps))
   app.use('/api/teams', requireSession, teamRoutes(deps))
   app.use('/api/assistant', requireSession, assistantRoutes(deps))
+  app.use('/api/billing', requireSession, billingRoutes(deps))
   app.use('/api/admin', requireAdmin(config), adminRoutes(deps))
   app.use('/api', (req, res, next) => next(notFound('No such API route.')))
 

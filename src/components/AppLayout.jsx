@@ -7,6 +7,7 @@ import { Badge, Spinner } from './ui.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { useData } from '../state/DataContext.jsx'
 import { useToast } from '../state/ToastContext.jsx'
+import { api } from '../api.js'
 
 const APP_LINKS = [
   { to: '/app', label: 'Timer', icon: Icon.Clock, end: true },
@@ -15,11 +16,13 @@ const APP_LINKS = [
   { to: '/app/assistant', label: 'Assistant', icon: Icon.Message },
   { to: '/app/teams', label: 'Teams', icon: Icon.Users, account: true },
   { to: '/app/developer', label: 'Developer', icon: Icon.Plug, account: true },
+  { to: '/app/billing', label: 'Billing', icon: Icon.Briefcase, account: true },
   { to: '/app/settings', label: 'Settings', icon: Icon.Settings },
 ]
 
 function SyncBanner() {
   const { user, status } = useAuth()
+  const [resent, setResent] = useState(false)
   const { localCount, uploadLocal, discardLocal, outboxCount, error, reload } = useData()
   const { toast } = useToast()
   const [busy, setBusy] = useState(false)
@@ -82,6 +85,32 @@ function SyncBanner() {
         <button className="link-btn muted" type="button" onClick={discardLocal}>
           Discard
         </button>
+      </div>
+    )
+  }
+  if (user && !user.emailVerified) {
+    return (
+      <div className="app-banner" role="status">
+        <Icon.Mail width={16} height={16} />
+        <span>
+          {resent ? `A new link is on its way to ${user.email}.` : `Confirm your email: we sent a link to ${user.email}.`}
+        </span>
+        {!resent && (
+          <button
+            className="link-btn"
+            type="button"
+            onClick={async () => {
+              try {
+                await api.post('/account/verify/resend')
+                setResent(true)
+              } catch (err) {
+                toast(err.message, { tone: 'error' })
+              }
+            }}
+          >
+            Send it again
+          </button>
+        )}
       </div>
     )
   }

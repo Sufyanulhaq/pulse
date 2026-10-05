@@ -78,6 +78,15 @@ describe('accounts', () => {
     expect(srv.db.prepare("SELECT COUNT(*) AS n FROM users WHERE email = 'leaver@example.com'").get().n).toBe(0)
   })
 
+  it('rate limits sign up and log in attempts per address', async () => {
+    const limited = await startServer({ authRateLimit: 3 })
+    const c = client(limited.url)
+    const codes = []
+    for (let i = 0; i < 4; i++) codes.push((await c.post('/api/auth/login', { email: 'x@example.com', password: 'whatever' })).status)
+    expect(codes).toEqual([401, 401, 401, 429])
+    await limited.close()
+  })
+
   it('sends security headers and hides the framework', async () => {
     const res = await fetch(`${srv.url}/api/health`)
     expect(res.headers.get('x-content-type-options')).toBe('nosniff')

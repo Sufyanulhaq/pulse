@@ -17,6 +17,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
 COPY --from=build /app/src/lib ./src/lib
+COPY --from=build /app/scripts ./scripts
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node
 VOLUME ["/data"]

@@ -4,13 +4,17 @@ import { dateTime, duration, shortDate } from '../../lib/format.js'
 import { BarChart } from '../../components/Charts.jsx'
 import { Icon } from '../../components/Icon.jsx'
 import { Badge, EmptyState, Spinner, Stat, usePageTitle } from '../../components/ui.jsx'
+import { useToast } from '../../state/ToastContext.jsx'
 
 export default function AdminPage() {
   usePageTitle('Admin')
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [backingUp, setBackingUp] = useState(false)
+  const { toast } = useToast()
+  const load = () => api.get('/admin/overview').then(setData).catch((err) => setError(err.message))
   useEffect(() => {
-    api.get('/admin/overview').then(setData).catch((err) => setError(err.message))
+    load()
   }, [])
 
   if (error) return <div className="card"><EmptyState icon={Icon.Lock} title="Admins only">{error}</EmptyState></div>
@@ -23,7 +27,10 @@ export default function AdminPage() {
           <h1>Admin</h1>
           <p>How the whole service is doing.</p>
         </div>
-        <Badge tone={data.assistantMode === 'claude' ? 'primary' : 'neutral'}>Assistant: {data.assistantMode}</Badge>
+        <div className="row">
+          <Badge tone={data.assistantMode === 'claude' ? 'primary' : 'neutral'}>Assistant: {data.assistantMode}</Badge>
+          <Badge tone={data.emailProvider === 'log' ? 'warn' : 'good'}>Email: {data.emailProvider === 'log' ? 'printed, not sent' : data.emailProvider}</Badge>
+        </div>
       </div>
       <div className="grid grid-4">
         <Stat label="Users" icon={Icon.Users} value={data.users} sub={`${data.activeUsers7d} active in 7 days`} />
@@ -60,6 +67,61 @@ export default function AdminPage() {
               <dd>{data.deliveries.failed || 0}</dd>
             </div>
           </dl>
+        </section>
+      </div>
+      <div className="grid grid-2 mt">
+        <section className="card">
+          <div className="card-head">
+            <h2>Paying accounts</h2>
+          </div>
+          <dl className="records">
+            <div>
+              <dt>Pro</dt>
+              <dd>{data.plans.pro || 0}</dd>
+            </div>
+            <div>
+              <dt>Team</dt>
+              <dd>{data.plans.team || 0}</dd>
+            </div>
+          </dl>
+          <p className="small muted mt-sm">{data.emailFailures7d} email{data.emailFailures7d === 1 ? '' : 's'} failed to send in the last 7 days.</p>
+        </section>
+        <section className="card">
+          <div className="card-head">
+            <h2>Database backups</h2>
+            {data.backups.enabled && (
+              <button
+                className="btn btn-ghost btn-sm"
+                type="button"
+                disabled={backingUp}
+                onClick={async () => {
+                  setBackingUp(true)
+                  try {
+                    const r = await api.post('/admin/backups')
+                    toast(`Backup written: ${r.backup.name}`, { tone: 'success' })
+                    load()
+                  } catch (err) {
+                    toast(err.message, { tone: 'error' })
+                  } finally {
+                    setBackingUp(false)
+                  }
+                }}
+              >
+                {backingUp ? <Spinner /> : <Icon.Database width={15} height={15} />} Back up now
+              </button>
+            )}
+          </div>
+          {data.backups.enabled ? (
+            data.backups.latest ? (
+              <p className="small">
+                Latest: <span className="mono">{data.backups.latest.name}</span>, {(data.backups.latest.bytes / 1024).toFixed(0)} KB, {dateTime(data.backups.latest.createdAt)}
+              </p>
+            ) : (
+              <p className="small muted">No backups yet. The first runs on schedule, or press Back up now.</p>
+            )
+          ) : (
+            <p className="small muted">Backups are off. Set BACKUP_DIR on the server to turn on scheduled copies.</p>
+          )}
         </section>
       </div>
       <section className="card mt">

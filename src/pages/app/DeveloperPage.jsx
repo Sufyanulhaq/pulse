@@ -4,6 +4,8 @@ import { api } from '../../api.js'
 import { useToast } from '../../state/ToastContext.jsx'
 import { dateTime } from '../../lib/format.js'
 import { Icon } from '../../components/Icon.jsx'
+import { useAuth } from '../../state/AuthContext.jsx'
+import { UpgradeCallout } from '../../components/UpgradeCallout.jsx'
 import { Badge, ConfirmDialog, CopyButton, EmptyState, Field, Modal, Spinner, Toggle, usePageTitle } from '../../components/ui.jsx'
 
 const EVENTS = [
@@ -189,6 +191,8 @@ function Deliveries({ endpointId, refreshKey }) {
 }
 
 function Webhooks() {
+  const { user } = useAuth()
+  const allowed = user?.billing?.features?.webhooks !== false
   const [hooks, setHooks] = useState(null)
   const [adding, setAdding] = useState(false)
   const [secret, setSecret] = useState('')
@@ -207,10 +211,17 @@ function Webhooks() {
           <h2 id="hooks-title">Webhooks</h2>
           <p className="muted small">Pulse sends a signed POST to your URL when something happens. Failed deliveries retry with a growing delay, and you can replay them here.</p>
         </div>
-        <button className="btn btn-primary btn-sm" type="button" onClick={() => setAdding(true)}>
-          <Icon.Plus width={15} height={15} /> Add webhook
-        </button>
+        {allowed && (
+          <button className="btn btn-primary btn-sm" type="button" onClick={() => setAdding(true)}>
+            <Icon.Plus width={15} height={15} /> Add webhook
+          </button>
+        )}
       </div>
+      {!allowed && (
+        <div className="mb">
+          <UpgradeCallout>Webhooks are part of the Pro plan. Existing endpoints are kept but paused until you upgrade.</UpgradeCallout>
+        </div>
+      )}
       {hooks === null ? (
         <Spinner />
       ) : hooks.length === 0 ? (
@@ -312,6 +323,8 @@ function Webhooks() {
 }
 
 function Tokens() {
+  const { user } = useAuth()
+  const allowed = user?.billing?.features?.apiTokens !== false
   const [tokens, setTokens] = useState(null)
   const [name, setName] = useState('')
   const [scope, setScope] = useState('read')
@@ -331,6 +344,8 @@ function Tokens() {
           <p className="muted small">For scripts and tools. Send as <code className="inline-code">Authorization: Bearer pulse_…</code>. A read token can only read; a write token can also add sessions.</p>
         </div>
       </div>
+      {!allowed && <UpgradeCallout>API tokens are part of the Pro plan. Tokens you already made stop working until you upgrade.</UpgradeCallout>}
+      {allowed && (
       <form
         className="card inline-form"
         onSubmit={async (e) => {
@@ -361,6 +376,7 @@ function Tokens() {
           <Icon.Key width={15} height={15} /> Create token
         </button>
       </form>
+      )}
       {tokens && tokens.length > 0 && (
         <div className="table-wrap mt-sm">
           <table className="table">

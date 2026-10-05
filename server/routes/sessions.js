@@ -25,7 +25,7 @@ const listQuery = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 })
 
-export function sessionRoutes({ db }) {
+export function sessionRoutes({ db, config }) {
   const r = Router()
   const insert = db.prepare(
     `INSERT OR IGNORE INTO focus_sessions (id, user_id, start, end, minutes, planned, label, tag, interruptions, completed, created_at)
@@ -80,7 +80,7 @@ export function sessionRoutes({ db }) {
         const settings = getSettings(db, userId)
         const before = todayMinutes(allSessions(db, userId, startOfDay(s.start), startOfDay(s.start) + 86_400_000), s.start)
         if (!insertOne(userId, s)) return false
-        enqueueEvent(db, userId, sessionEvent(s))
+        enqueueEvent(db, userId, sessionEvent(s), config)
         const after = before + s.minutes
         if (before < settings.goalMinutes && after >= settings.goalMinutes) {
           const day = dayKey(s.start)
@@ -89,7 +89,7 @@ export function sessionRoutes({ db }) {
             id: `evt_goal_${day}`,
             created: Math.floor(Date.now() / 1000),
             data: { date: day, goal_minutes: settings.goalMinutes, focused_minutes: Math.round(after) },
-          })
+          }, config)
         }
         return true
       })
@@ -152,7 +152,7 @@ export function sessionRoutes({ db }) {
           id: `evt_del_${row.id}`,
           created: Math.floor(Date.now() / 1000),
           data: { session_id: row.id },
-        })
+        }, config)
       })
       res.json({ ok: true })
     }),

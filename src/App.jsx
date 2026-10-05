@@ -29,6 +29,10 @@ const TeamDetail = lazy(() => import('./pages/app/TeamsPage.jsx').then((m) => ({
 const DeveloperPage = lazy(() => import('./pages/app/DeveloperPage.jsx'))
 const SettingsPage = lazy(() => import('./pages/app/SettingsPage.jsx'))
 const AdminPage = lazy(() => import('./pages/app/AdminPage.jsx'))
+const BillingPage = lazy(() => import('./pages/app/BillingPage.jsx'))
+const VerifyPage = lazy(() => import('./pages/AccountFlows.jsx').then((m) => ({ default: m.VerifyPage })))
+const ForgotPage = lazy(() => import('./pages/AccountFlows.jsx').then((m) => ({ default: m.ForgotPage })))
+const ResetPage = lazy(() => import('./pages/AccountFlows.jsx').then((m) => ({ default: m.ResetPage })))
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -79,6 +83,9 @@ export default function App() {
           </Route>
           <Route path="login" element={<LoginPage />} />
           <Route path="signup" element={<SignupPage />} />
+          <Route path="verify" element={<VerifyPage />} />
+          <Route path="forgot" element={<ForgotPage />} />
+          <Route path="reset" element={<ResetPage />} />
           <Route path="app" element={<AppLayout />}>
             <Route index element={<TimerPage />} />
             <Route path="insights" element={<InsightsPage />} />
@@ -89,6 +96,7 @@ export default function App() {
             <Route path="developer" element={<RequireAccount><DeveloperPage /></RequireAccount>} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="admin" element={<RequireAccount><AdminPage /></RequireAccount>} />
+            <Route path="billing" element={<RequireAccount><BillingPage /></RequireAccount>} />
           </Route>
         </Routes>
       </Suspense>

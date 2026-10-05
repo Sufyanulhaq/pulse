@@ -1,7 +1,8 @@
 import { Router } from 'express'
+import { route } from '../http.js'
 import { DAY, dayKey, startOfDay } from '../../src/lib/format.js'
 
-export function adminRoutes({ db, assistant }) {
+export function adminRoutes({ db, assistant, backups, mailer }) {
   const r = Router()
   r.get('/overview', (req, res) => {
     const count = (sql, ...args) => db.prepare(sql).get(...args).n
@@ -25,6 +26,10 @@ export function adminRoutes({ db, assistant }) {
       apiTokens: count('SELECT COUNT(*) AS n FROM api_tokens'),
       assistantQuestions: count('SELECT COUNT(*) AS n FROM assistant_messages'),
       assistantMode: assistant.mode,
+      emailProvider: mailer.provider,
+      plans: Object.fromEntries(db.prepare("SELECT plan, COUNT(*) AS n FROM users WHERE plan_status IN ('active', 'trialing', 'past_due') GROUP BY plan").all().map((row) => [row.plan, row.n])),
+      emailFailures7d: count("SELECT COUNT(*) AS n FROM email_log WHERE status = 'failed' AND created_at >= ?", Date.now() - 7 * DAY),
+      backups: { enabled: backups.enabled, latest: backups.list()[0] || null },
       deliveries,
       signups: [...signups.entries()].map(([date, n]) => ({ date, count: n })),
       recentFailures: db
@@ -32,5 +37,13 @@ export function adminRoutes({ db, assistant }) {
         .all(),
     })
   })
+  r.get('/backups', (req, res) => res.json({ enabled: backups.enabled, backups: backups.list() }))
+  r.post(
+    '/backups',
+    route(async (req, res) => {
+      if (!backups.enabled) return res.status(400).json({ error: { code: 'backups_off', message: 'Backups are off. Set BACKUP_DIR to turn them on.' } })
+      res.status(201).json({ backup: await backups.run() })
+    }),
+  )
   return r
 }

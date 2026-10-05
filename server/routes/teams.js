@@ -2,7 +2,9 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { newId, randomToken } from '../crypto.js'
 import { badRequest, conflict, forbidden, notFound, parse, route } from '../http.js'
-import { teamSchema } from '../schemas.js'
+import { email as emailSchema, teamSchema } from '../schemas.js'
+import { requireFeature, requireVerified } from '../auth.js'
+import { rateLimit } from '../http.js'
 import { transaction } from '../db.js'
 import { rowToSession } from '../store.js'
 import { byHour, byTag, dailySeries, summarize } from '../../src/lib/stats.js'
@@ -15,7 +17,7 @@ const MAX_MEMBERS = 50
 
 const inviteCode = () => randomToken(9).replace(/[^A-Za-z0-9]/g, 'x').slice(0, 10).toUpperCase()
 
-export function teamRoutes({ db }) {
+export function teamRoutes({ db, config, mailer }) {
   const r = Router()
 
   const membership = (teamId, userId) =>
@@ -40,6 +42,7 @@ export function teamRoutes({ db }) {
 
   r.post(
     '/',
+    requireFeature(config, 'createTeams'),
     route(async (req, res) => {
       const body = parse(teamSchema, req.body)
       const owned = db.prepare('SELECT COUNT(*) AS n FROM teams WHERE owner_id = ?').get(req.user.id).n
@@ -149,6 +152,27 @@ export function teamRoutes({ db }) {
       const code = inviteCode()
       db.prepare('UPDATE teams SET invite_code = ? WHERE id = ?').run(code, team.id)
       res.json({ inviteCode: code })
+    }),
+  )
+
+  r.post(
+    '/:id/invites',
+    requireVerified,
+    rateLimit({ windowMs: 3_600_000, max: 30, key: (req) => req.user.id, message: 'That is a lot of invites. Try again in an hour.' }),
+    route(async (req, res) => {
+      const { team } = loadTeam(req, { owner: true })
+      const { emails } = parse(
+        z.object({ emails: z.array(emailSchema).min(1, 'Add at least one email.').max(10, 'Invite up to 10 people at a time.') }),
+        req.body,
+      )
+      const url = `${config.appUrl}/app/teams?join=${team.invite_code}`
+      const unique = [...new Set(emails)]
+      const results = []
+      for (const to of unique) {
+        const sent = await mailer.send(to, 'invite', { inviter: req.user.name, team: team.name, url })
+        results.push({ email: to, sent })
+      }
+      res.json({ results })
     }),
   )
 
