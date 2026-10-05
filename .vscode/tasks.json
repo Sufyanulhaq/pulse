@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pulse: install",
+      "type": "npm",
+      "script": "install",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pulse: run (API and website)",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Pulse: Stripe webhooks (needs the Stripe CLI)",
+      "type": "shell",
+      "command": "stripe listen --forward-to localhost:3001/api/stripe/webhook",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Pulse: tests",
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "Pulse: preview the free demo build",
+      "type": "npm",
+      "script": "preview:demo",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

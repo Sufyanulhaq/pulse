@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API server (debug)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server/index.js",
+      "runtimeArgs": ["--disable-warning=ExperimentalWarning"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Website",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev:web",
+      "cwd": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Pulse: API and website",
+      "configurations": ["API server (debug)", "Website"],
+      "stopAll": true
+    }
+  ]
+}

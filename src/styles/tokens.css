@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  color-scheme: light;
+  --primary: rgb(37, 99, 235);
+  --primary-hover: rgb(29, 78, 216);
+  --primary-soft: rgba(37, 99, 235, 0.1);
+  --on-primary: rgb(255, 255, 255);
+  --accent: rgb(234, 88, 12);
+  --accent-hover: rgb(194, 65, 12);
+  --accent-soft: rgba(234, 88, 12, 0.1);
+  --on-accent: rgb(20, 10, 4);
+
+  --bg: rgb(248, 250, 252);
+  --bg-elevated: rgb(255, 255, 255);
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-strong: rgb(255, 255, 255);
+  --muted: rgb(238, 242, 248);
+  --text: rgb(15, 23, 42);
+  --text-2: rgb(71, 85, 105);
+  --text-3: rgb(100, 116, 139);
+  --border: rgb(226, 232, 240);
+  --border-strong: rgb(203, 213, 225);
+  --ring: rgb(37, 99, 235);
+  --nav-bg: rgba(248, 250, 252, 0.78);
+  --code-bg: rgb(15, 23, 42);
+  --code-text: rgb(226, 232, 240);
+
+  --good: rgb(21, 128, 61);
+  --good-soft: rgba(21, 128, 61, 0.1);
+  --warn: rgb(180, 83, 9);
+  --warn-soft: rgba(217, 119, 6, 0.12);
+  --danger: rgb(220, 38, 38);
+  --danger-soft: rgba(220, 38, 38, 0.1);
+
+  --chart-bar: rgb(42, 120, 214);
+  --chart-bar-muted: rgba(42, 120, 214, 0.55);
+  --chart-grid: rgb(226, 232, 240);
+  --chart-axis: rgb(148, 163, 184);
+  --heat-0: rgb(238, 242, 248);
+  --heat-1: rgb(207, 225, 247);
+  --heat-2: rgb(158, 196, 240);
+  --heat-3: rgb(101, 159, 227);
+  --heat-4: rgb(42, 120, 214);
+  --heat-5: rgb(23, 76, 150);
+
+  --series-1: rgb(42, 120, 214);
+  --series-2: rgb(235, 104, 52);
+  --series-3: rgb(27, 175, 122);
+  --series-4: rgb(237, 161, 0);
+  --series-5: rgb(232, 123, 164);
+  --series-6: rgb(0, 131, 0);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 64px rgba(15, 23, 42, 0.12);
+
+  --sans: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --primary: rgb(96, 145, 250);
+  --primary-hover: rgb(129, 166, 252);
+  --primary-soft: rgba(96, 145, 250, 0.14);
+  --on-primary: rgb(8, 13, 28);
+  --accent: rgb(251, 133, 74);
+  --accent-hover: rgb(253, 160, 110);
+  --accent-soft: rgba(251, 133, 74, 0.14);
+
+  --bg: rgb(11, 17, 32);
+  --bg-elevated: rgb(17, 25, 44);
+  --surface: rgba(22, 31, 54, 0.72);
+  --surface-strong: rgb(22, 31, 54);
+  --muted: rgb(30, 41, 66);
+  --text: rgb(241, 245, 249);
+  --text-2: rgb(186, 198, 216);
+  --text-3: rgb(140, 155, 178);
+  --border: rgb(38, 51, 79);
+  --border-strong: rgb(58, 74, 106);
+  --ring: rgb(129, 166, 252);
+  --nav-bg: rgba(11, 17, 32, 0.78);
+  --code-bg: rgb(6, 10, 22);
+
+  --good: rgb(74, 222, 128);
+  --good-soft: rgba(74, 222, 128, 0.12);
+  --warn: rgb(251, 191, 36);
+  --warn-soft: rgba(251, 191, 36, 0.12);
+  --danger: rgb(248, 113, 113);
+  --danger-soft: rgba(248, 113, 113, 0.12);
+
+  --chart-bar: rgb(57, 135, 229);
+  --chart-bar-muted: rgba(57, 135, 229, 0.55);
+  --chart-grid: rgb(38, 51, 79);
+  --chart-axis: rgb(100, 116, 139);
+  --heat-0: rgb(26, 36, 60);
+  --heat-1: rgb(27, 54, 98);
+  --heat-2: rgb(31, 79, 145);
+  --heat-3: rgb(45, 108, 196);
+  --heat-4: rgb(76, 145, 235);
+  --heat-5: rgb(147, 191, 247);
+
+  --series-1: rgb(57, 135, 229);
+  --series-2: rgb(217, 89, 38);
+  --series-3: rgb(25, 158, 112);
+  --series-4: rgb(201, 133, 0);
+  --series-5: rgb(213, 81, 129);
+  --series-6: rgb(0, 131, 0);
+
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
