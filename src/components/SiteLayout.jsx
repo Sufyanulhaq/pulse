@@ -15,7 +15,8 @@ export const SITE_LINKS = [
   { label: 'About', to: '/about' },
 ]
 
-export const REPO_URL = 'https://github.com/Sufyanulhaq/pulse'
+export { REPO_URL } from '../env.js'
+import { REPO_URL } from '../env.js'
 
 function openPalette() {
   window.dispatchEvent(new Event('pulse:command'))

@@ -1,3 +1,7 @@
+import { DEMO } from './env.js'
+
+export const DEMO_MESSAGE = 'This is the free demo, which runs without a server. Accounts, teams, billing and email are in the full version.'
+
 export class ApiError extends Error {
   constructor(status, body) {
     super(body?.error?.message || `Request failed (${status}).`)
@@ -8,6 +12,7 @@ export class ApiError extends Error {
 }
 
 async function request(method, path, body) {
+  if (DEMO) throw new ApiError(0, { error: { code: 'demo', message: DEMO_MESSAGE } })
   let res
   try {
     res = await fetch(`/api${path}`, {

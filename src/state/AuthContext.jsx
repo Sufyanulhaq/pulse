@@ -1,14 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { api } from '../api.js'
+import { DEMO } from '../env.js'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [status, setStatus] = useState('loading')
-  // 'loading' | 'ready' | 'offline' (the API could not be reached; the app works locally)
+  const [status, setStatus] = useState(DEMO ? 'demo' : 'loading')
+  // 'loading' | 'ready' | 'offline' (the API could not be reached) | 'demo' (built without a server)
 
   const refresh = useCallback(async () => {
+    if (DEMO) return null
     try {
       const data = await api.get('/auth/me')
       setUser(data.user)

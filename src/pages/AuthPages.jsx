@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useAuth } from '../state/AuthContext.jsx'
+import { DEMO, REPO_URL } from '../env.js'
 import { Brand } from '../components/Brand.jsx'
 import { Icon } from '../components/Icon.jsx'
 import { Field, Spinner, usePageTitle } from '../components/ui.jsx'
@@ -44,6 +45,23 @@ function AuthShell({ title, sub, children, footer }) {
   )
 }
 
+function DemoNotice() {
+  return (
+    <div className="stack mt">
+      <div className="callout">
+        <Icon.Info width={18} height={18} />
+        <div>This is the free demo, which runs without a server, so there are no accounts here. The timer, insights, history and assistant all work without one, saved in your browser.</div>
+      </div>
+      <Link className="btn btn-primary btn-block" to="/app">
+        Open the app
+      </Link>
+      <a className="btn btn-ghost btn-block" href={REPO_URL} target="_blank" rel="noreferrer">
+        <Icon.Github width={16} height={16} /> Run the full version yourself
+      </a>
+    </div>
+  )
+}
+
 function PasswordInput(props) {
   const [show, setShow] = useState(false)
   return (
@@ -67,6 +85,13 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false)
   const next = new URLSearchParams(location.search).get('next') || '/app'
   if (user) return <Navigate to={next.startsWith('/') ? next : '/app'} replace />
+  if (DEMO) {
+    return (
+      <AuthShell title="Accounts are in the full version" sub="Logging in syncs sessions, and unlocks teams, webhooks, the API and billing." footer={<Link to="/">Back to the site</Link>}>
+        <DemoNotice />
+      </AuthShell>
+    )
+  }
 
   return (
     <AuthShell title="Welcome back" sub="Log in to sync your focus sessions." footer={<>New to Pulse? <Link to="/signup">Create a free account</Link></>}>
@@ -130,6 +155,13 @@ export function SignupPage() {
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
   if (user) return <Navigate to="/app" replace />
+  if (DEMO) {
+    return (
+      <AuthShell title="Accounts are in the full version" sub="With an account, sessions sync across devices, and teams, webhooks, the API and billing switch on." footer={<Link to="/">Back to the site</Link>}>
+        <DemoNotice />
+      </AuthShell>
+    )
+  }
   const s = strength(form.password)
 
   return (

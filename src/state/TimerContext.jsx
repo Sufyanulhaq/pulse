@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { readJSON, writeJSON } from '../lib/storage.js'
+import { asset } from '../env.js'
 import { applySettings, finish, initialTimer, interrupt, isDue, PHASES, remainingMs, setPhase, skipBreak, stop, toggle } from '../lib/timer.js'
 import { chime } from '../lib/sound.js'
 import { clock, duration } from '../lib/format.js'
@@ -12,7 +13,7 @@ const KEY = 'pulse.timer'
 function notify(title, body) {
   try {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/favicon.svg', tag: 'pulse-timer' })
+      new Notification(title, { body, icon: asset('favicon.svg'), tag: 'pulse-timer' })
     }
   } catch {
     // Some browsers only allow notifications from a service worker. The toast still shows.

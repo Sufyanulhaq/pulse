@@ -1,3 +1,4 @@
+import './env.js'
 import { createApp } from './app.js'
 import { createAssistant } from './assistant.js'
 import { loadConfig } from './config.js'

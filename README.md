@@ -36,8 +36,32 @@ What is in it
 **Site.** Home with a live product tour built from the real components, features, pricing with a seat calculator, developer docs, integrations, changelog, about the maker with a skills to projects filter, contact, privacy and terms. Light and dark themes, a Ctrl K command menu, keyboard shortcuts, reduced motion support, and no sideways scrolling from 375px up.
 
 
-Run it
-------
+Run it in VS Code
+-----------------
+
+1. Pull the branch with these changes (Source Control, then Pull, or `git pull`).
+2. Open a terminal in VS Code (Terminal, then New Terminal) and run `npm install`.
+3. Copy `.env.example` to a new file called `.env` and fill in the keys you have. `.env` is ignored by git, so keys never get committed. Leave a line empty to skip that feature.
+4. Press `Ctrl Shift B` (or Terminal, then Run Build Task) and pick **Pulse: run (API and website)**. Open http://localhost:5173.
+
+Other tasks are under Terminal, then Run Task: tests, Stripe webhooks, and a preview of the free demo build. The Run and Debug panel has **Pulse: API and website** for stepping through server code with breakpoints.
+
+**Email with no domain yet.** With `RESEND_API_KEY` set and `EMAIL_FROM=Pulse <onboarding@resend.dev>`, Resend delivers only to the address you signed up to Resend with. Sign up in Pulse with that address to receive the confirmation and reset emails.
+
+**Payments with no website yet.** Use Stripe test mode keys (`sk_test_...`). Install the free Stripe CLI, run `stripe login` once, then the **Pulse: Stripe webhooks** task. It prints a `whsec_...` secret: put it in `.env` as `STRIPE_WEBHOOK_SECRET` and restart. Pay with card `4242 4242 4242 4242`, any future date and any three digits.
+
+
+Free public demo
+----------------
+
+`npm run build:demo` builds the site and app without the server. Everything except accounts works in the visitor's browser, and account pages explain that they are part of the full version. No domain or paid hosting is needed:
+
+* **Vercel:** import the repository at vercel.com (free Hobby plan). `vercel.json` already sets the demo build and page routing. You get an address like `pulse-yourname.vercel.app`.
+* **GitHub Pages:** in the repository settings, set Pages to deploy from GitHub Actions, then run the **Demo on GitHub Pages** workflow from the Actions tab. The site appears at `https://YOUR_NAME.github.io/pulse/`.
+
+
+Run it from a terminal
+----------------------
 
 Needs Node 22.13 or newer (the server uses the built in `node:sqlite`).
 

@@ -8,6 +8,7 @@ import { useAuth } from '../state/AuthContext.jsx'
 import { useData } from '../state/DataContext.jsx'
 import { useToast } from '../state/ToastContext.jsx'
 import { api } from '../api.js'
+import { REPO_URL } from '../env.js'
 
 const APP_LINKS = [
   { to: '/app', label: 'Timer', icon: Icon.Clock, end: true },
@@ -35,6 +36,17 @@ function SyncBanner() {
         <button className="link-btn" type="button" onClick={reload}>
           Try again
         </button>
+      </div>
+    )
+  }
+  if (status === 'demo') {
+    return (
+      <div className="app-banner" role="status">
+        <Icon.Sparkle width={16} height={16} />
+        <span>You are using the free demo. Everything here works and is saved in this browser. Accounts, sync, teams, webhooks and billing are in the full version.</span>
+        <a className="link-btn" href={REPO_URL} target="_blank" rel="noreferrer">
+          Get the full version
+        </a>
       </div>
     )
   }

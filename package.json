@@ -9,12 +9,14 @@
     "dev:web": "vite",
     "dev:api": "node --watch --disable-warning=ExperimentalWarning server/index.js",
     "build": "vite build",
-    "start": "NODE_ENV=production node --disable-warning=ExperimentalWarning server/index.js",
-    "test": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest run",
+    "start": "node --disable-warning=ExperimentalWarning scripts/start.js",
+    "test": "node --disable-warning=ExperimentalWarning node_modules/vitest/vitest.mjs run",
     "test:e2e": "node tests/e2e/run.js",
     "lint": "oxlint",
     "preview": "vite preview",
-    "backup": "node --disable-warning=ExperimentalWarning scripts/backup.js"
+    "backup": "node --disable-warning=ExperimentalWarning scripts/backup.js",
+    "build:demo": "vite build --mode demo",
+    "preview:demo": "vite build --mode demo && vite preview"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

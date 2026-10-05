@@ -11,6 +11,7 @@ import { chime } from '../../lib/sound.js'
 import { Icon } from '../../components/Icon.jsx'
 import { Badge, ConfirmDialog, Field, Modal, Segmented, Toggle, usePageTitle } from '../../components/ui.jsx'
 import { ExportMenu } from './ExportMenu.jsx'
+import { DEMO, REPO_URL } from '../../env.js'
 
 function NumberSetting({ label, hint, value, field, onSave, unit = 'min' }) {
   const [draft, setDraft] = useState(String(value))
@@ -409,6 +410,11 @@ export default function SettingsPage() {
           <section className="card settings-section">
             <h2>Account</h2>
             <p className="muted small">You are using Pulse without an account. Sessions stay in this browser. With a free account they sync across devices, and you can join teams, use webhooks and the API, and ask the assistant with Claude.</p>
+            {DEMO ? (
+              <a className="btn btn-ghost btn-sm mt-sm" href={REPO_URL} target="_blank" rel="noreferrer">
+                <Icon.Github width={15} height={15} /> Accounts are in the full version
+              </a>
+            ) : (
             <div className="row mt-sm">
               <Link className="btn btn-primary btn-sm" to="/signup">
                 Create free account
@@ -417,6 +423,7 @@ export default function SettingsPage() {
                 Log in
               </Link>
             </div>
+            )}
           </section>
         )}
       </div>

@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { Icon } from '../../components/Icon.jsx'
+import { asset } from '../../env.js'
 import { Badge, Modal, Reveal, SectionHead, usePageTitle } from '../../components/ui.jsx'
 import { CLIENT_WORK, EARLIER_WORK, MAKER, PRINCIPLES, PROJECTS, PROJECT_CATEGORIES, SKILL_GROUPS } from '../../data/maker.js'
 
-const img = (name) => `/projects/${name}.webp`
+const img = (name) => asset(`projects/${name}.webp`)
 
 function ProjectModal({ project, onClose }) {
   const [shot, setShot] = useState(0)

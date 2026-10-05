@@ -3,6 +3,7 @@
  *   node scripts/backup.js [output path]
  * Reads DATABASE_PATH like the server does.
  */
+import '../server/env.js'
 import { join } from 'node:path'
 import { openDatabase, backupTo } from '../server/db.js'
 

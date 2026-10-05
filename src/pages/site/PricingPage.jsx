@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Icon } from '../../components/Icon.jsx'
+import { DEMO } from '../../env.js'
 import { Reveal, SectionHead, Segmented, usePageTitle } from '../../components/ui.jsx'
 
 const PLANS = [
@@ -59,8 +60,9 @@ export default function PricingPage() {
   const [billing, setBilling] = useState('annual')
   const [seats, setSeats] = useState(8)
   const [open, setOpen] = useState(0)
-  const [beta, setBeta] = useState(false)
+  const [beta, setBeta] = useState(DEMO)
   useEffect(() => {
+    if (DEMO) return
     fetch('/api/health')
       .then((r) => r.json())
       .then((h) => setBeta(!h.billing))

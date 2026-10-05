@@ -9,6 +9,7 @@ import './styles/layout.css'
 import './styles/site.css'
 import './styles/app.css'
 import App from './App.jsx'
+import { BASE } from './env.js'
 import { ThemeProvider } from './state/ThemeContext.jsx'
 import { ToastProvider } from './state/ToastContext.jsx'
 import { AuthProvider } from './state/AuthContext.jsx'
@@ -18,7 +19,7 @@ import { TimerProvider } from './state/TimerContext.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
+      <BrowserRouter basename={BASE.replace(/\/$/, '') || '/'}>
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider>
