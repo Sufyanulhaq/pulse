@@ -6,6 +6,7 @@ import { useTheme } from '../state/ThemeContext.jsx'
 import { useTimer } from '../state/TimerContext.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { Kbd } from './ui.jsx'
+import { DEMO } from '../env.js'
 
 /** Ctrl K or Cmd K opens a searchable list of pages and actions. */
 export function CommandPalette() {
@@ -59,7 +60,6 @@ export function CommandPalette() {
       { group: 'App', label: 'Settings', icon: Icon.Settings, run: go('/app/settings') },
       { group: 'Site', label: 'Home', icon: Icon.Target, run: go('/') },
       { group: 'Site', label: 'Features', icon: Icon.Layers, run: go('/features') },
-      { group: 'Site', label: 'Pricing', icon: Icon.Briefcase, run: go('/pricing') },
       { group: 'Site', label: 'Developers and API reference', icon: Icon.Code, run: go('/developers') },
       { group: 'Site', label: 'Integrations', icon: Icon.Plug, run: go('/integrations') },
       { group: 'Site', label: 'Changelog', icon: Icon.List, run: go('/changelog') },
@@ -67,7 +67,7 @@ export function CommandPalette() {
       { group: 'Site', label: 'Contact', icon: Icon.Mail, run: go('/contact') },
       user
         ? { group: 'Account', label: 'Log out', icon: Icon.Logout, run: () => logout().then(() => navigate('/')) }
-        : { group: 'Account', label: 'Log in', icon: Icon.Lock, run: go('/login') },
+        : { group: 'Account', label: 'Log in', icon: Icon.Lock, run: go('/login'), hidden: DEMO },
     ]
     return list.filter((c) => !c.hidden)
   }, [navigate, setTheme, timer, user, logout])

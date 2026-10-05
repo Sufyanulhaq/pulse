@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Icon } from '../../components/Icon.jsx'
 import { Kbd, Reveal, SectionHead, usePageTitle } from '../../components/ui.jsx'
+import { DemoNote } from '../../components/DemoNote.jsx'
 
 const GROUPS = [
   {
@@ -106,6 +107,7 @@ export default function FeaturesPage() {
         <span className="eyebrow">Features</span>
         <h1>Everything in Pulse</h1>
         <p className="hero-sub">One app for timing focus, understanding it and sharing it safely. Here is what each part does, and how.</p>
+        <DemoNote>This live demo runs entirely in your browser: the timer, insights, history and assistant all work. Accounts, teams, webhooks and the API are built into the full version with its Node and SQLite server.</DemoNote>
         <nav className="jump-links" aria-label="On this page">
           {GROUPS.map((g) => (
             <button key={g.id} type="button" onClick={() => document.getElementById(g.id)?.scrollIntoView({ behavior: 'smooth' })}>

@@ -283,11 +283,6 @@ export default function SettingsPage() {
             <Icon.Dashboard width={15} height={15} /> Admin
           </Link>
         )}
-        {user && (
-          <Link to="/app/billing" className="btn btn-ghost btn-sm">
-            <Icon.Briefcase width={15} height={15} /> Billing
-          </Link>
-        )}
         <Link to="/" className="btn btn-ghost btn-sm">
           <Icon.ArrowLeft width={15} height={15} /> Back to site
         </Link>

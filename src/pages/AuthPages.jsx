@@ -219,7 +219,7 @@ export function SignupPage() {
           {busy && <Spinner />} Create account
         </button>
         <p className="small muted">
-          By creating an account you agree to the <Link to="/terms">terms</Link> and <Link to="/privacy">privacy notice</Link>.
+          See the <Link to="/privacy">privacy notice</Link> for what is stored and how to delete it.
         </p>
       </form>
     </AuthShell>

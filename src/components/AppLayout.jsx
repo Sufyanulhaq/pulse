@@ -17,7 +17,6 @@ const APP_LINKS = [
   { to: '/app/assistant', label: 'Assistant', icon: Icon.Message },
   { to: '/app/teams', label: 'Teams', icon: Icon.Users, account: true },
   { to: '/app/developer', label: 'Developer', icon: Icon.Plug, account: true },
-  { to: '/app/billing', label: 'Billing', icon: Icon.Briefcase, account: true },
   { to: '/app/settings', label: 'Settings', icon: Icon.Settings },
 ]
 

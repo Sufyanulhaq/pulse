@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { Icon } from '../../components/Icon.jsx'
 import { Badge, CopyButton, Field, usePageTitle } from '../../components/ui.jsx'
 import { signPayload, verifyPayload } from '../../lib/webhook.js'
+import { DemoNote } from '../../components/DemoNote.jsx'
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -380,6 +381,7 @@ export default function DevelopersPage() {
         <span className="eyebrow">Developers</span>
         <h1>API and webhooks</h1>
         <p className="hero-sub">Read your focus data, log sessions from anywhere, and get a signed request when something happens.</p>
+        <DemoNote>The API and webhooks run on the full version’s server, which this live demo does not include. The signature checker below works right here in your browser.</DemoNote>
       </section>
       <section className="container docs-shell">
         <div className="tabs" role="tablist" aria-label="Documentation sections">

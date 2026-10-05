@@ -202,7 +202,7 @@ export default function HomePage() {
         <div className="glow glow-2" aria-hidden="true" />
         <motion.span className="badge" {...fade(0)}>
           <span className="badge-dot" aria-hidden="true" />
-          Public beta · every feature free
+          Open source · free · no sign up
         </motion.span>
         <div className="hero-grid">
           <div>
@@ -391,7 +391,7 @@ export default function HomePage() {
         <div className="container">
           <Reveal className="cta-banner">
             <h2>Your next focus block starts with one key</h2>
-            <p>Open the app, press space, and see your first insight today. No account, no card.</p>
+            <p>Open the app, press space, and see your first insight today. No account needed.</p>
             <div className="hero-actions">
               <Link className="btn btn-accent btn-lg" to="/app">
                 Open Pulse <Icon.Arrow />

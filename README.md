@@ -27,50 +27,41 @@ What is in it
 
 **API.** Personal tokens, read only or read and write, stored only as digests. Documented on the Developers page, with an in browser signature checker.
 
-**Billing.** Personal, Pro and Team plans through Stripe Checkout, monthly or yearly, with per seat pricing for teams and the Stripe customer portal for cards, invoices and cancelling. Plans follow signed Stripe webhooks (duplicates ignored, failures retried by Stripe). A plan that lapses pauses webhooks and API tokens without deleting anything. With no Stripe key the server runs in beta mode and every feature is free.
+**Billing (optional, off by default).** The server can run Stripe subscriptions with signed webhooks if a key is ever set. The live demo does not use it.
 
 **Email.** Address confirmation, forgotten password reset (one hour, single use, ends every login), a notice when a password changes, and team invites by email. Sent through Resend, or printed to the log in development.
 
 **Backups.** Scheduled online copies of the SQLite database to `BACKUP_DIR`, keeping the newest `BACKUP_KEEP`, plus `npm run backup` and a Back up now button for admins.
 
-**Site.** Home with a live product tour built from the real components, features, pricing with a seat calculator, developer docs, integrations, changelog, about the maker with a skills to projects filter, contact, privacy and terms. Light and dark themes, a Ctrl K command menu, keyboard shortcuts, reduced motion support, and no sideways scrolling from 375px up.
+**Site.** Home with a live product tour built from the real components, features, developer docs, integrations, changelog, about the maker with a skills to projects filter, contact and privacy. Light and dark themes, a Ctrl K command menu, keyboard shortcuts, reduced motion support, and no sideways scrolling from 375px up.
 
 
-Run it in VS Code
------------------
+Live demo on Vercel
+-------------------
 
-1. Pull the branch with these changes (Source Control, then Pull, or `git pull`).
-2. Open a terminal in VS Code (Terminal, then New Terminal) and run `npm install`.
-3. Copy `.env.example` to a new file called `.env` and fill in the keys you have. `.env` is ignored by git, so keys never get committed. Leave a line empty to skip that feature.
-4. Press `Ctrl Shift B` (or Terminal, then Run Build Task) and pick **Pulse: run (API and website)**. Open http://localhost:5173.
+The live site is a static build that runs entirely in the visitor's browser: the timer, insights, history, assistant, themes and every page work, with data saved in local storage. Account features (sync, teams, webhooks, the API, email) belong to the full version and explain that politely instead of failing.
 
-Other tasks are under Terminal, then Run Task: tests, Stripe webhooks, and a preview of the free demo build. The Run and Debug panel has **Pulse: API and website** for stepping through server code with breakpoints.
+To publish it:
 
-**Email with no domain yet.** With `RESEND_API_KEY` set and `EMAIL_FROM=Pulse <onboarding@resend.dev>`, Resend delivers only to the address you signed up to Resend with. Sign up in Pulse with that address to receive the confirmation and reset emails.
+1. Go to vercel.com, sign in with GitHub, choose **Add New**, then **Project**, and import this repository.
+2. Leave every setting as it is and press **Deploy**. `vercel.json` already sets the build, the output folder and the page routing.
 
-**Payments with no website yet.** Use Stripe test mode keys (`sk_test_...`). Install the free Stripe CLI, run `stripe login` once, then the **Pulse: Stripe webhooks** task. It prints a `whsec_...` secret: put it in `.env` as `STRIPE_WEBHOOK_SECRET` and restart. Pay with card `4242 4242 4242 4242`, any future date and any three digits.
+You get a free address like `pulse-yourname.vercel.app`. Every push to the production branch redeploys it automatically. No domain, server, keys or environment variables are needed.
 
 
-Free public demo
-----------------
-
-`npm run build:demo` builds the site and app without the server. Everything except accounts works in the visitor's browser, and account pages explain that they are part of the full version. No domain or paid hosting is needed:
-
-* **Vercel:** import the repository at vercel.com (free Hobby plan). `vercel.json` already sets the demo build and page routing. You get an address like `pulse-yourname.vercel.app`.
-* **GitHub Pages:** in the repository settings, set Pages to deploy from GitHub Actions, then run the **Demo on GitHub Pages** workflow from the Actions tab. The site appears at `https://YOUR_NAME.github.io/pulse/`.
-
-
-Run it from a terminal
-----------------------
-
-Needs Node 22.13 or newer (the server uses the built in `node:sqlite`).
+Run it on your computer
+-----------------------
 
 ```bash
 npm install
 npm run dev
 ```
 
-This starts the API on port 3001 and the site on port 5173, with `/api` proxied. Open http://localhost:5173.
+Open http://localhost:5173. This runs the full version: the website plus the Node and SQLite API on port 3001, with accounts, sync, teams, webhooks and the API working. In VS Code, `Ctrl Shift B` runs the same thing.
+
+Optional keys go in a `.env` file (copy `.env.example`). Everything works without them: emails are printed to the terminal instead of sent, and the assistant answers offline.
+
+`npm run build` makes the demo build used on Vercel. `npm run build:full` makes the build the API server serves (see `Dockerfile`).
 
 
 Test it
@@ -78,7 +69,7 @@ Test it
 
 ```bash
 npm test
-npm run build
+npm run build:full
 npm run test:e2e
 npm run lint
 ```
@@ -118,34 +109,6 @@ Configuration
 | `AUTH_RATE_LIMIT` | 20 | Sign up, log in and reset attempts per minute per address |
 
 In production (`NODE_ENV=production`) the same server serves the built front end, sets Secure cookies and HSTS, and expects to sit behind https.
-
-
-Setting up payments
--------------------
-
-1. In the Stripe dashboard (test mode first), copy the secret key into `STRIPE_SECRET_KEY`.
-2. Add a webhook endpoint pointing at `https://YOUR_HOST/api/stripe/webhook` with the events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`. Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
-3. Turn on the customer portal in Stripe's billing settings.
-4. Prices are set in `server/plans.js`, so there is nothing to create in Stripe by hand.
-
-To try it locally, run `stripe listen --forward-to localhost:3001/api/stripe/webhook` and use the secret it prints. Card `4242 4242 4242 4242` pays successfully in test mode.
-
-
-Setting up email
-----------------
-
-Create a Resend account, verify your sending domain, then set `RESEND_API_KEY` and `EMAIL_FROM`. Every email sent or failed is recorded in the `email_log` table and failures are counted on the admin page.
-
-
-Deploy
-------
-
-Pulse keeps its data in SQLite and runs a webhook worker, so it needs one long running server with a persistent disk. A `Dockerfile` is included, plus ready configs for two hosts:
-
-* **Fly.io:** `fly launch --copy-config --no-deploy`, `fly volumes create pulse_data --size 1`, `fly secrets set ADMIN_EMAILS=you@example.com APP_URL=https://your-app.fly.dev`, add the Stripe and Resend secrets the same way, then `fly deploy`. Set `BACKUP_DIR=/data/backups` and copy that folder off the machine regularly (for example with `fly ssh sftp`) so backups survive losing the volume.
-* **Render:** create a Blueprint from this repository; `render.yaml` sets up the service, health check and disk.
-
-Serverless hosts that throw the disk away between requests are not a good fit for this server.
 
 
 Project layout

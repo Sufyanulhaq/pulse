@@ -15,8 +15,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "backup": "node --disable-warning=ExperimentalWarning scripts/backup.js",
-    "build:demo": "vite build --mode demo",
-    "preview:demo": "vite build --mode demo && vite preview"
+    "preview:demo": "vite build && vite preview",
+    "build:full": "vite build --mode full"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

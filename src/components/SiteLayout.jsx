@@ -6,10 +6,10 @@ import { Icon } from './Icon.jsx'
 import { ThemeToggle } from './ThemeToggle.jsx'
 import { TimerPill } from './TimerPill.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
+import { DEMO } from '../env.js'
 
 export const SITE_LINKS = [
   { label: 'Features', to: '/features' },
-  { label: 'Pricing', to: '/pricing' },
   { label: 'Developers', to: '/developers' },
   { label: 'Integrations', to: '/integrations' },
   { label: 'About', to: '/about' },
@@ -61,11 +61,13 @@ export function SiteNav() {
             </Link>
           ) : (
             <>
-              <Link className="nav-login" to="/login">
-                Log in
-              </Link>
+              {!DEMO && (
+                <Link className="nav-login" to="/login">
+                  Log in
+                </Link>
+              )}
               <Link className="btn btn-primary btn-sm nav-cta" to="/app">
-                Start free
+                Open the app
               </Link>
             </>
           )}
@@ -105,11 +107,13 @@ export function SiteNav() {
               ) : (
                 <>
                   <Link className="btn btn-primary btn-block" to="/app">
-                    Start free
+                    Open the app
                   </Link>
-                  <Link className="btn btn-ghost btn-block" to="/login">
-                    Log in
-                  </Link>
+                  {!DEMO && (
+                    <Link className="btn btn-ghost btn-block" to="/login">
+                      Log in
+                    </Link>
+                  )}
                 </>
               )}
             </div>
@@ -126,7 +130,6 @@ const FOOTER = [
     links: [
       { label: 'Open the app', to: '/app' },
       { label: 'Features', to: '/features' },
-      { label: 'Pricing', to: '/pricing' },
       { label: 'Changelog', to: '/changelog' },
     ],
   },
@@ -145,7 +148,6 @@ const FOOTER = [
       { label: 'About the maker', to: '/about' },
       { label: 'Contact', to: '/contact' },
       { label: 'Privacy', to: '/privacy' },
-      { label: 'Terms', to: '/terms' },
     ],
   },
 ]
@@ -181,7 +183,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} Pulse. MIT licensed.</span>
+        <span>© {new Date().getFullYear()} Pulse, a portfolio project by Sufyan Ul Haq. MIT licensed.</span>
         <span>
           Press <kbd className="kbd">Ctrl K</kbd> anywhere to jump around.
         </span>

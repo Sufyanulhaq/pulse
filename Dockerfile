@@ -4,7 +4,7 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm run build && npm prune --omit=dev
+RUN npm run build:full && npm prune --omit=dev
 
 FROM node:22-slim
 WORKDIR /app

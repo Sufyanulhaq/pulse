@@ -1584,3 +1584,8 @@ main:focus {
   color: var(--text-3);
   font-weight: 600;
 }
+
+.demo-note {
+  margin-top: var(--space-4);
+  max-width: 760px;
+}

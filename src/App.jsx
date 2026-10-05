@@ -10,14 +10,12 @@ import TimerPage from './pages/app/TimerPage.jsx'
 
 // The home page and timer load first; everything else loads when visited.
 const FeaturesPage = lazy(() => import('./pages/site/FeaturesPage.jsx'))
-const PricingPage = lazy(() => import('./pages/site/PricingPage.jsx'))
 const DevelopersPage = lazy(() => import('./pages/site/DevelopersPage.jsx'))
 const IntegrationsPage = lazy(() => import('./pages/site/IntegrationsPage.jsx'))
 const ChangelogPage = lazy(() => import('./pages/site/ChangelogPage.jsx'))
 const AboutPage = lazy(() => import('./pages/site/AboutPage.jsx'))
 const ContactPage = lazy(() => import('./pages/site/ContactPage.jsx'))
 const PrivacyPage = lazy(() => import('./pages/site/LegalPages.jsx').then((m) => ({ default: m.PrivacyPage })))
-const TermsPage = lazy(() => import('./pages/site/LegalPages.jsx').then((m) => ({ default: m.TermsPage })))
 const LoginPage = lazy(() => import('./pages/AuthPages.jsx').then((m) => ({ default: m.LoginPage })))
 const SignupPage = lazy(() => import('./pages/AuthPages.jsx').then((m) => ({ default: m.SignupPage })))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'))
@@ -29,7 +27,6 @@ const TeamDetail = lazy(() => import('./pages/app/TeamsPage.jsx').then((m) => ({
 const DeveloperPage = lazy(() => import('./pages/app/DeveloperPage.jsx'))
 const SettingsPage = lazy(() => import('./pages/app/SettingsPage.jsx'))
 const AdminPage = lazy(() => import('./pages/app/AdminPage.jsx'))
-const BillingPage = lazy(() => import('./pages/app/BillingPage.jsx'))
 const VerifyPage = lazy(() => import('./pages/AccountFlows.jsx').then((m) => ({ default: m.VerifyPage })))
 const ForgotPage = lazy(() => import('./pages/AccountFlows.jsx').then((m) => ({ default: m.ForgotPage })))
 const ResetPage = lazy(() => import('./pages/AccountFlows.jsx').then((m) => ({ default: m.ResetPage })))
@@ -71,14 +68,14 @@ export default function App() {
           <Route element={<SiteLayout />}>
             <Route index element={<HomePage />} />
             <Route path="features" element={<FeaturesPage />} />
-            <Route path="pricing" element={<PricingPage />} />
+            <Route path="pricing" element={<Navigate to="/" replace />} />
             <Route path="developers" element={<DevelopersPage />} />
             <Route path="integrations" element={<IntegrationsPage />} />
             <Route path="changelog" element={<ChangelogPage />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="contact" element={<ContactPage />} />
             <Route path="privacy" element={<PrivacyPage />} />
-            <Route path="terms" element={<TermsPage />} />
+            <Route path="terms" element={<Navigate to="/privacy" replace />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
           <Route path="login" element={<LoginPage />} />
@@ -96,7 +93,6 @@ export default function App() {
             <Route path="developer" element={<RequireAccount><DeveloperPage /></RequireAccount>} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="admin" element={<RequireAccount><AdminPage /></RequireAccount>} />
-            <Route path="billing" element={<RequireAccount><BillingPage /></RequireAccount>} />
           </Route>
         </Routes>
       </Suspense>

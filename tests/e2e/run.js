@@ -94,7 +94,7 @@ page.on('console', (msg) => {
 })
 page.on('pageerror', (err) => consoleErrors.push(`${page.url()}: ${err.message}`))
 
-const SITE_PAGES = ['/', '/features', '/pricing', '/developers', '/developers?tab=webhooks', '/developers?tab=endpoints', '/integrations', '/changelog', '/about', '/contact', '/privacy', '/terms', '/nope']
+const SITE_PAGES = ['/', '/features', '/developers', '/developers?tab=webhooks', '/developers?tab=endpoints', '/integrations', '/changelog', '/about', '/contact', '/privacy', '/nope']
 
 await step('every site page renders a heading without errors', async () => {
   for (const path of SITE_PAGES) {
@@ -169,9 +169,9 @@ await step('the command menu opens with Ctrl K and navigates', async () => {
   await page.goto(base + '/')
   await page.locator('h1').first().waitFor()
   await page.keyboard.press('Control+k')
-  await page.getByPlaceholder('Search pages and actions').fill('pricing')
+  await page.getByPlaceholder('Search pages and actions').fill('changelog')
   await page.keyboard.press('Enter')
-  await page.waitForURL(/\/pricing$/)
+  await page.waitForURL(/\/changelog$/)
 })
 
 await step('sign up, move local sessions to the account', async () => {
@@ -204,11 +204,6 @@ await step('confirm email from the link in the welcome email', async () => {
   await page.getByRole('heading', { name: 'Email confirmed' }).waitFor()
   const me = await page.evaluate(() => fetch('/api/auth/me').then((r) => r.json()))
   assert(me.user.emailVerified, 'email not marked as confirmed')
-})
-
-await step('billing page explains the free beta', async () => {
-  await page.goto(base + '/app/billing')
-  await page.getByText('Pulse is in public beta, so every feature is free.').waitFor()
 })
 
 await step('webhook: add, send test, delivered and signed', async () => {
