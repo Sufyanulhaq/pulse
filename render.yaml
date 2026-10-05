@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: pulse
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /data/pulse.db
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    disk:
+      name: pulse-data
+      mountPath: /data
+      sizeGB: 1
